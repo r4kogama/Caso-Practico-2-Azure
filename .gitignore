@@ -1,0 +1,12 @@
+.terraform/
+*.tfstate
+*.tfvars
+*.tfstate.*
+tfplan
+*.tfplan
+*_id_rsa
+*_id_rsa.pub
+.keys/
+.crash.log
+crash.log
+scripts/
