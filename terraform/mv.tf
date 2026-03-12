@@ -85,4 +85,17 @@ resource "local_file" "ssh_public_key" {
   filename        = "${path.module}/${var.vm_name}_id_rsa.pub"
   file_permission = "0644"
 }
+# Administra una cuenta de almacenamiento de Azure.
+resource "azurerm_storage_account" "asc" {
+  name                     = var.asc_name
+  resource_group_name      = azurerm_resource_group.rg.name
+  location                 = azurerm_resource_group.rg.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+
+  tags = {
+    resource    = "staging"
+    environment = var.practica_name
+  }
+}
 

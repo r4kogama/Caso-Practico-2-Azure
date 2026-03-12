@@ -1,0 +1,19 @@
+all:
+  children:
+    webservers:
+      hosts:
+        ${vm_name}:
+          ansible_host: ${mv_ip}
+          ansible_user: ${ansible_user}
+          ansible_ssh_private_key_file: ${private_key_path}
+    vm:
+      hosts:
+        ${mv_ip}:
+          ansible_user: ${ansible_user}
+          ansible_ssh_private_key_file: ${private_key_path}
+    acr:
+      hosts:
+        localhost:
+          ansible_connection: local
+  vars:
+    acr_name: ${acr_name}

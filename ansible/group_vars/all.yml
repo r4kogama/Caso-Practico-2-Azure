@@ -1,0 +1,49 @@
+---
+acr_namespace: "casopractico2"
+# Credenciales por entorno
+# ACR (acr_name llega desde inventory.tmpl -> hosts.yml)
+acr_server: "{{ acr_name }}.azurecr.io"
+acr_username: "{{ lookup('env', 'ACR_USER') | trim }}"
+acr_password: "{{ lookup('env', 'ACR_PASSWORD') | trim }}"
+
+# Images
+nginx_image: "{{ acr_server }}/nginx:{{ acr_namespace }}"
+redis_image: "{{ acr_server }}/redis:{{ acr_namespace }}"
+frontend_image: "{{ acr_server }}/azure-vote-front:{{ acr_namespace }}"
+
+# Kubernetes auth for Ansible kubernetes.core.k8s tasks
+k8s_auth_kubeconfig: "{{ lookup('env', 'HOME') }}/.kube/config"
+k8s_auth_context: "aks_dev_fr_CP2"
+
+# template backend/frontend
+app_namespace: "unir"
+app:
+  backend:
+    name: backend
+    image: "{{ redis_image }}"
+    replicas: 1
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "250m"
+      memory: "256Mi"
+    resources:
+      storage: 1Gi
+    port: 6379
+    volumeMounts:
+      name: "datos"
+      mountPath: "/bitnami/redis/data"
+    pvc:
+      claimName: "pvc-nfs-pod"
+  frontend:
+    name: frontend
+    image: "{{ frontend_image }}"
+    replicas: 1
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "250m"
+      memory: "256Mi"
+    port: 80

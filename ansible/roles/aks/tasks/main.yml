@@ -1,0 +1,20 @@
+- name: Create namespace
+  vars:
+    ansible_python_interpreter: "/usr/bin/python3"
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_auth_kubeconfig }}"
+    context: "{{ k8s_auth_context }}"
+    definition:
+      kind: Namespace
+      apiVersion: v1
+      metadata:
+        name: "{{ app_namespace }}"
+
+- name: >-
+    Deploy App. Read definition file from the Ansible controller file system.
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_auth_kubeconfig }}"
+    context: "{{ k8s_auth_context }}"
+    state: present
+    definition: "{{ lookup('template', 'app_template.yml.j2') }}"
+    namespace: "{{ app_namespace }}"

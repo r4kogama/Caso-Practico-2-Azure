@@ -10,3 +10,16 @@ tfplan
 .crash.log
 crash.log
 scripts/
+
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+**/.htpasswd
+
+*.retry
+ansible.log
+
+ansible/roles/mv/files/

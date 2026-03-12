@@ -36,11 +36,7 @@ variable "vnet_name" {
   type        = string
   default     = "vpc_fr"
 }
-variable "aks_name" {
-  description = "Nombre del clúster AKS"
-  type        = string
-  default     = "aks_dev_fr_CP2"
-}
+
 variable "asc_name" {
   description = "Nombre de la cuenta de almacenamiento"
   type        = string
@@ -125,4 +121,9 @@ variable "aks_dns_prefix" {
   description = "Prefijo DNS para AKS"
   type        = string
   default     = "akscp2"
+} 
+variable "aks_name" {
+  description = "Nombre del clúster AKS"
+  type        = string
+  default     = "aks_dev_fr_CP2"
 }

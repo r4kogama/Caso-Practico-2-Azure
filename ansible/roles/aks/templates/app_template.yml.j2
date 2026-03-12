@@ -1,0 +1,116 @@
+# --- DEPLOYMENT BACKEND ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ app.backend.name }}
+  namespace: "{{ app_namespace }}"
+spec:
+  replicas: {{ app.backend.replicas }}
+  selector:
+    matchLabels:
+      app: {{ app.backend.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ app.backend.name }}
+    spec:
+      containers:
+        - name: {{ app.backend.name }}
+          image: "{{ app.backend.image }}"
+          env:
+            - name: ALLOW_EMPTY_PASSWORD
+              value: "yes"
+          resources:
+            requests:
+              cpu: "{{ app.backend.requests.cpu }}"
+              memory: "{{ app.backend.requests.memory }}"
+            limits:
+              cpu: "{{ app.backend.limits.cpu }}"
+              memory: "{{ app.backend.limits.memory }}"
+          ports:
+            - containerPort: {{ app.backend.port }}
+              name: redis
+          volumeMounts:
+            - mountPath: {{ app.backend.volumeMounts.mountPath}}
+              name: {{ app.backend.volumeMounts.name }}
+      securityContext:
+        fsGroup: 1001
+      volumes:
+        - name: {{ app.backend.volumeMounts.name }}
+          persistentVolumeClaim:
+            claimName: {{ app.backend.pvc.claimName }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ app.backend.pvc.claimName }}
+  namespace: "{{ app_namespace }}"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: managed-csi
+  resources:
+    requests:
+      storage: {{ app.backend.resources.storage }}   
+---
+
+# --- SERVICE CONNECT BACKEND to FRONTEND---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ app.backend.name }}
+  namespace: "{{ app_namespace }}"
+spec:
+  ports:
+    - port: {{ app.backend.port }}
+  selector:
+    app: {{ app.backend.name }}
+
+---
+# --- DEPLOYMENT FRONTEND ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ app.frontend.name }}
+  namespace: "{{ app_namespace }}"
+spec:
+  replicas: {{ app.frontend.replicas }}
+  selector:
+    matchLabels:
+      app: {{ app.frontend.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ app.frontend.name }}
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+        - name: {{ app.frontend.name }}
+          image: "{{ app.frontend.image }}"
+          resources:
+            requests:
+              cpu: {{ app.frontend.requests.cpu }}
+              memory: {{ app.frontend.requests.memory }}
+            limits:
+              cpu: {{ app.frontend.limits.cpu }}
+              memory: {{ app.frontend.limits.memory }}
+          ports:
+            - containerPort: {{ app.frontend.port }}
+          env:
+            - name: REDIS
+              value: "{{ app.backend.name }}"
+
+---
+# --- LoadBalancer access from IP pública ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ app.frontend.name }}
+  namespace: "{{ app_namespace }}"
+spec:
+  type: LoadBalancer
+  ports:
+    - port: {{ app.frontend.port }}
+  selector:
+    app: {{ app.frontend.name }}

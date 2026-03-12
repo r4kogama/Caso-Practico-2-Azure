@@ -64,4 +64,9 @@ output "kube_config" {
   description = "Configuración de kubectl para AKS"
   value       = azurerm_kubernetes_cluster.aks.kube_config_raw
   sensitive   = true
+} 
+
+output "ansible_inventory_path" {
+  description = "Ruta local del inventario de Ansible generado por Terraform"
+  value       = local_file.ansible_inventory.filename
 }

@@ -1,0 +1,47 @@
+---
+- name: Login podman to ACR
+  containers.podman.podman_login:
+    username: "{{ acr_username }}"
+    password: "{{ acr_password }}"
+    registry: "{{ acr_server }}"
+
+- name: Define container images
+  ansible.builtin.set_fact:
+    container_images:
+      - name: nginx
+        hub: "docker.io/r4ko"
+        tag: "casopractico2"
+      - name: redis
+        hub: "docker.io/jsosa15"
+        tag: "6.0.8"
+      - name: azure-vote-front
+        hub: "docker.io/jsosa15"
+        tag: "v1"
+        
+- name: Pull image from Docker Hub
+  containers.podman.podman_image:
+    name: "{{ item.hub }}/{{ item.name }}"
+    tag: "{{ item.tag }}"
+    pull: true
+  loop: "{{ container_images }}"
+  loop_control:
+    label: "{{ item.hub }}/{{ item.name }}:{{ item.tag }}"
+
+- name: Tag images for ACR
+  containers.podman.podman_tag:
+    image: "{{ item.hub }}/{{ item.name }}:{{ item.tag }}"
+    target_names:
+      - "{{ acr_server }}/{{ item.name }}:{{ acr_namespace }}"
+  loop: "{{ container_images }}"
+  loop_control:
+    label: "{{ acr_server }}/{{ item.name }}:{{ acr_namespace }}"
+
+- name: Push image to ACR
+  containers.podman.podman_image:
+    name: "{{ acr_server }}/{{ item.name }}"
+    tag: "{{ acr_namespace }}"
+    push: true
+    tls_verify: false
+  loop: "{{ container_images }}"
+  loop_control:
+    label: "{{ acr_server }}/{{ item.name }}:{{ acr_namespace }}"

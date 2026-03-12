@@ -1,0 +1,32 @@
+---
+- name: Setup ACR and images
+  hosts: localhost
+  vars_files:
+    - ../group_vars/all.yml
+
+  tasks:
+    - name: Pull, build, tag and push images to ACR
+      include_role:
+        name: acr
+        
+- name: Setup Webserver
+  hosts: webservers
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../group_vars/all.yml
+    
+  tasks:
+  - name: Configure VM with Podman and deploy web server
+    include_role:
+      name: mv
+
+- name: Setup AKS
+  hosts: localhost
+  vars_files:
+    - ../group_vars/all.yml
+  
+  tasks:
+  - name: Deploy app to AKS
+    include_role:
+      name: aks
