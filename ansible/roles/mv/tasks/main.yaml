@@ -1,11 +1,4 @@
 ---
-- name: Login to ACR
-  containers.podman.podman_login:
-    username: "{{ acr_username }}"
-    password: "{{ acr_password }}"
-    registry: "{{ acr_server }}"
-  become: true
-
 - name: Update repositories apt cache
   apt:
     update_cache: yes
@@ -15,6 +8,13 @@
   apt:
     name: "podman"
     state: present
+  become: true
+
+- name: Login to ACR
+  containers.podman.podman_login:
+    username: "{{ acr_username }}"
+    password: "{{ acr_password }}"
+    registry: "{{ acr_server }}"
   become: true
 
 - name: Pull image from ACR
@@ -46,4 +46,8 @@
     enabled: yes
     state: started
     daemon_reload: yes
+  register: systemd_start_result
+  retries: 3
+  delay: 5
+  until: systemd_start_result is succeeded
   become: true
